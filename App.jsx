@@ -3,54 +3,94 @@ import {
   Heart, 
   Activity, 
   Calculator, 
-  Info, 
   ShieldCheck, 
   User, 
-  ChevronRight, 
-  AlertCircle,
-  CheckCircle2,
-  Scale,
-  Thermometer,
-  Zap,
-  X,
-  Check,
-  Droplets,
-  BellRing,
-  Wind,
-  Play,
-  Square,
-  Ticket,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  UserCircle,
-  Gem,
-  Award,
-  Barcode
+  Scale, 
+  Thermometer, 
+  Zap, 
+  X, 
+  Check, 
+  Droplets, 
+  BellRing, 
+  Wind, 
+  Play, 
+  Square, 
+  MapPin, 
+  Calendar, 
+  Gem, 
+  Award, 
+  Barcode, 
+  Quote, 
+  Pencil,
+  Smartphone,
+  ScanLine,
+  Loader2
 } from 'lucide-react';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [bmiData, setBmiData] = useState({ weight: '', height: '' });
+  const [isEditing, setIsEditing] = useState(null);
+  
+  // Permissions State
+  const [showPermission, setShowPermission] = useState(true);
+  const [permissionGranted, setPermissionGranted] = useState(false);
+  
+  // Profile State
+  const [profile, setProfile] = useState({
+    name: 'Venki Venom',
+    age: '24',
+    country: 'Australia',
+    city: 'Sydney',
+    email: 'venkivenom@healthguard.au',
+    screenTime: 6.4 
+  });
+
+  // Body Temperature Logic
+  const [bodyTemp, setBodyTemp] = useState('36.6');
+  const [isScanningTemp, setIsScanningTemp] = useState(false);
+
+  const scanTemperature = () => {
+    setIsScanningTemp(true);
+    setTimeout(() => {
+      // Simulate reading a slight fluctuation
+      const newTemp = (36.1 + Math.random() * 1.1).toFixed(1);
+      setBodyTemp(newTemp);
+      setIsScanningTemp(false);
+    }, 2000);
+  };
+
+  // BMI Calculator State
+  const [bmiData, setBmiData] = useState({ weight: '70', height: '175' });
   const [bmiResult, setBmiResult] = useState(null);
   
-  // Hydration 5-Point Tracker State
-  const [hydrationLog, setHydrationLog] = useState([
-    { id: 1, time: '9 AM', period: '6am-9am', status: 'pending' },
-    { id: 2, time: '12 PM', period: '9am-12pm', status: 'pending' },
-    { id: 3, time: '3 PM', period: '12pm-3pm', status: 'pending' },
-    { id: 4, time: '6 PM', period: '3pm-6pm', status: 'pending' },
-    { id: 5, time: '9 PM', period: '6pm-9pm', status: 'pending' },
-  ]);
+  // Protocol Logic
+  const [dailyProtocol, setDailyProtocol] = useState("");
+  const protocolPool = [
+    "Cellular regeneration protocol: Prioritize deep sleep phase to optimize mitochondrial health.",
+    "System override: Reduce ocular screen exposure by 15% to increase melatonin secretion.",
+    "Baseline calibration: Integrated hydration levels currently dictate a 0.5L intake within 60 minutes.",
+    "Metabolic loop: Circadian rhythm alignment achieved via morning solar exposure.",
+    "Neuro-optimization: 5-minute theta-wave meditation required to stabilize cortisol levels.",
+    "Vitality check: Heart rate variability indicates a need for low-impact recovery today.",
+    "Digital Detox: Screen time threshold reached. Initiate 20-minute ocular rest cycle."
+  ];
 
-  // Daily Tasks State
-  const [tasks, setTasks] = useState([
-    { id: 1, label: '30m Exercise', completed: false },
-    { id: 2, label: 'No processed sugar', completed: false },
-    { id: 3, label: 'Mindfulness session', completed: false },
-    { id: 4, label: 'Reading 20 pages', completed: false },
+  useEffect(() => {
+    const randomProtocol = protocolPool[Math.floor(Math.random() * protocolPool.length)];
+    setDailyProtocol(randomProtocol);
+  }, []);
+
+  // Sleep Quality calculation based on permissions and screen time
+  const sleepQuality = permissionGranted ? (9.5 - (profile.screenTime * 0.35)).toFixed(1) : "—";
+
+  // Hydration Tracker State
+  const [hydrationLog, setHydrationLog] = useState([
+    { id: 1, time: '9 AM', status: 'pending' },
+    { id: 2, time: '12 PM', status: 'pending' },
+    { id: 3, time: '3 PM', status: 'pending' },
+    { id: 4, time: '6 PM', status: 'pending' },
+    { id: 5, time: '9 PM', status: 'pending' },
   ]);
 
   // Meditation State
@@ -58,9 +98,7 @@ const App = () => {
   const [meditationMinutes, setMeditationMinutes] = useState(5);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [meditationSessions, setMeditationSessions] = useState(0);
-  const audioRef = useRef(null);
 
-  // Meditation Timer Logic
   useEffect(() => {
     let interval;
     if (isMeditating && timeRemaining > 0) {
@@ -70,10 +108,6 @@ const App = () => {
     } else if (isMeditating && timeRemaining === 0) {
       setIsMeditating(false);
       setMeditationSessions((prev) => prev + 1);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
     }
     return () => clearInterval(interval);
   }, [isMeditating, timeRemaining]);
@@ -81,17 +115,6 @@ const App = () => {
   const startMeditation = () => {
     setTimeRemaining(meditationMinutes * 60);
     setIsMeditating(true);
-    if (audioRef.current) {
-      audioRef.current.play().catch(e => console.log("Audio playback delayed until user interaction", e));
-    }
-  };
-
-  const stopMeditation = () => {
-    setIsMeditating(false);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
   };
 
   const formatTime = (seconds) => {
@@ -112,12 +135,6 @@ const App = () => {
     }));
   };
 
-  const toggleTask = (id) => {
-    setTasks(prev => prev.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
-    ));
-  };
-
   const calculateBMI = () => {
     const w = parseFloat(bmiData.weight);
     const h = parseFloat(bmiData.height) / 100;
@@ -125,115 +142,161 @@ const App = () => {
       const bmi = (w / (h * h)).toFixed(1);
       let category = '';
       let color = '';
-      if (bmi < 18.5) { category = 'Underweight'; color = 'text-blue-400'; }
-      else if (bmi < 25) { category = 'Healthy'; color = 'text-emerald-400'; }
-      else if (bmi < 30) { category = 'Overweight'; color = 'text-amber-400'; }
-      else { category = 'Obese'; color = 'text-rose-400'; }
+      if (bmi < 18.5) { category = 'Underweight'; color = 'text-blue-400 bg-blue-400/10 border-blue-400/20'; }
+      else if (bmi < 25) { category = 'Healthy'; color = 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20'; }
+      else if (bmi < 30) { category = 'Overweight'; color = 'text-amber-400 bg-amber-400/10 border-amber-400/20'; }
+      else { category = 'Obese'; color = 'text-rose-400 bg-rose-400/10 border-rose-400/20'; }
       setBmiResult({ value: bmi, category, color });
     }
+  };
+
+  const handleProfileUpdate = (field, value) => {
+    setProfile(prev => ({ ...prev, [field]: value }));
+    setIsEditing(null);
   };
 
   const NavItem = ({ id, icon: Icon, label }) => (
     <button
       onClick={() => setActiveTab(id)}
-      className={`flex flex-col items-center justify-center w-full py-3 transition-all duration-300 ${
+      className={`flex flex-col items-center justify-center w-full py-4 transition-all duration-300 ${
         activeTab === id 
-          ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]' 
-          : 'text-white/40 hover:text-white/70'
+          ? 'text-emerald-400 drop-shadow-[0_0_12px_rgba(52,211,153,0.8)]' 
+          : 'text-white/40 hover:text-white/80'
       }`}
     >
-      <Icon size={24} className={activeTab === id ? 'animate-pulse' : ''} />
-      <span className="text-[10px] mt-1.5 font-medium tracking-wider uppercase">{label}</span>
+      <Icon size={24} className={activeTab === id ? 'scale-110' : ''} strokeWidth={activeTab === id ? 2.5 : 2} />
+      <span className="text-[10px] mt-2 font-medium tracking-widest uppercase">{label}</span>
     </button>
   );
 
   return (
-    <div className="min-h-screen bg-[#060608] text-white font-sans flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden">
+    <div className="min-h-screen bg-[#050505] text-white font-sans antialiased flex flex-col max-w-md mx-auto relative overflow-hidden shadow-2xl">
       
-      {/* Background Decor */}
-      <div className="absolute top-[-10%] left-[-20%] w-80 h-80 bg-purple-600/20 rounded-full mix-blend-screen filter blur-[100px] animate-pulse"></div>
-      <div className="absolute bottom-[10%] right-[-20%] w-96 h-96 bg-emerald-600/15 rounded-full mix-blend-screen filter blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+      {/* Background Deep Glows */}
+      <div className="absolute top-[-5%] left-[-15%] w-96 h-96 bg-emerald-600/15 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-15%] w-96 h-96 bg-purple-600/15 rounded-full blur-[140px] pointer-events-none"></div>
+
+      {/* Permission Modal */}
+      {showPermission && (
+        <div className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in zoom-in duration-300">
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-[2.5rem] w-full text-center shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]">
+            <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/20">
+              <Smartphone size={32} className="text-emerald-400" />
+            </div>
+            <h2 className="text-xl font-semibold mb-3 tracking-tight">Screen Time Access</h2>
+            <p className="text-sm text-white/60 mb-8 leading-relaxed">
+              Health Guard requires access to your screen time data to accurately calculate your sleep quality and provide personalized recovery protocols.
+            </p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => { setPermissionGranted(false); setShowPermission(false); }} 
+                className="flex-1 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white/70 font-medium hover:bg-white/10 transition-colors"
+              >
+                Deny
+              </button>
+              <button 
+                onClick={() => { setPermissionGranted(true); setShowPermission(false); }} 
+                className="flex-1 py-3.5 rounded-2xl bg-emerald-500 text-black font-semibold shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:scale-105 transition-all"
+              >
+                Allow Access
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
-      <header className="bg-white/5 backdrop-blur-2xl px-6 py-5 border-b border-white/10 flex justify-between items-center sticky top-0 z-40">
-        <div className="flex items-center gap-3 text-emerald-400">
-          <ShieldCheck size={28} strokeWidth={2.5} className="drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
-          <h1 className="text-xl font-bold tracking-widest uppercase text-white drop-shadow-md">HealthGuard</h1>
+      <header className="bg-white/5 backdrop-blur-xl px-6 py-6 border-b border-white/10 flex justify-between items-center sticky top-0 z-40">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2 text-emerald-400 mb-1">
+            <ShieldCheck size={18} strokeWidth={2.5} />
+            <span className="text-[10px] font-bold tracking-widest uppercase opacity-80">Health Guard</span>
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight text-white">Welcome, {profile.name.split(' ')[0]}</h1>
         </div>
         <button 
           onClick={() => setIsProfileOpen(true)}
-          className="p-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white/80 hover:bg-white/20 transition-all shadow-lg active:scale-90"
+          className="p-3 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl text-white shadow-lg active:scale-90 transition-all hover:bg-white/20"
         >
-          <User size={18} />
+          <User size={20} />
         </button>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-6 pb-28 relative z-10 space-y-8 no-scrollbar">
+      <main className="flex-1 overflow-y-auto p-6 pb-40 relative z-10 space-y-8 no-scrollbar scroll-smooth">
         
         {activeTab === 'dashboard' && (
           <div className="space-y-8 animate-in fade-in duration-700">
-            <section>
-              <h2 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-4">Daily Status</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/5 backdrop-blur-lg p-5 rounded-3xl border border-white/10 shadow-xl group">
-                  <div className="bg-blue-500/20 text-blue-400 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-blue-500/30">
-                    <Zap size={22} />
+            
+            {/* Daily Protocol Glass Card */}
+            <section className="bg-white/10 backdrop-blur-xl rounded-[2rem] p-6 border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] relative overflow-hidden">
+               <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-emerald-500/20 rounded-xl text-emerald-400 border border-emerald-500/30">
+                    <Zap size={16} className="animate-pulse" />
                   </div>
-                  <p className="text-white/60 text-xs font-medium uppercase tracking-wider mb-1">Activity</p>
-                  <p className="text-2xl font-bold tracking-tight">4,281 <span className="text-xs text-white/40 font-normal">steps</span></p>
+                  <h3 className="text-[11px] font-bold uppercase tracking-widest text-white/60">Active Protocol</h3>
+               </div>
+               <div className="flex gap-4 items-start">
+                 <Quote size={20} className="text-emerald-400/40 flex-shrink-0 mt-1" />
+                 <p className="text-sm text-white/90 leading-relaxed font-medium">
+                   {dailyProtocol}
+                 </p>
+               </div>
+            </section>
+
+            <section>
+              <h2 className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-4 ml-1">Live Biometrics</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/5 backdrop-blur-lg p-6 rounded-[1.5rem] border border-white/10 shadow-lg">
+                  <div className="bg-blue-500/20 text-blue-400 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-blue-500/20">
+                    <Activity size={22} />
+                  </div>
+                  <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">Steps</p>
+                  <p className="text-2xl font-semibold tracking-tight text-white">4,281</p>
                 </div>
                 
-                <div className="bg-white/5 backdrop-blur-lg p-5 rounded-3xl border border-white/10 shadow-xl group">
-                  <div className="bg-rose-500/20 text-rose-400 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-rose-500/30">
-                    <Heart size={22} className="animate-pulse" />
+                <div className="bg-white/5 backdrop-blur-lg p-6 rounded-[1.5rem] border border-white/10 shadow-lg">
+                  <div className="bg-rose-500/20 text-rose-400 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-rose-500/20">
+                    <Heart size={22} className="animate-[pulse_1.5s_infinite]" />
                   </div>
-                  <p className="text-white/60 text-xs font-medium uppercase tracking-wider mb-1">Heart Rate</p>
-                  <p className="text-2xl font-bold tracking-tight">72 <span className="text-xs text-white/40 font-normal">bpm</span></p>
+                  <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">Resting HR</p>
+                  <p className="text-2xl font-semibold tracking-tight text-white">72 <span className="text-sm text-white/40 font-normal">bpm</span></p>
                 </div>
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-emerald-500/20 to-emerald-900/30 backdrop-blur-xl rounded-[2.5rem] p-7 border border-emerald-400/20 shadow-2xl relative overflow-hidden">
-              <div className="absolute -right-10 -top-10 bg-emerald-400/10 w-40 h-40 rounded-full blur-2xl"></div>
-              <div className="flex justify-between items-start mb-6 relative z-10">
+            <section className="bg-emerald-900/20 backdrop-blur-xl rounded-[2.5rem] p-8 border border-emerald-500/20 shadow-[0_8px_32px_0_rgba(16,185,129,0.15)] relative overflow-hidden">
+              <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="text-2xl font-bold tracking-tight">Health Index</h3>
-                  <p className="text-emerald-200/60 text-xs uppercase tracking-widest mt-2">Personal Score: 88/100</p>
+                  <h3 className="text-2xl font-semibold tracking-tight text-white">Health Index</h3>
+                  <p className="text-emerald-400 text-[10px] font-bold uppercase tracking-widest mt-2">Efficiency: 88%</p>
                 </div>
-                <Award className="text-emerald-300 drop-shadow-[0_0_15px_rgba(110,231,183,0.6)]" size={32} />
+                <Award className="text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" size={32} />
               </div>
-              <p className="text-sm text-emerald-50/70 leading-relaxed mb-6 relative z-10 font-light">
-                Your performance is 12% higher than last week. Maintain your hydration levels to reach 95.
+              <div className="h-2 w-full bg-black/40 rounded-full mb-6 overflow-hidden">
+                <div className="h-full bg-emerald-500 w-[88%] shadow-[0_0_10px_rgba(52,211,153,0.8)] rounded-full"></div>
+              </div>
+              <p className="text-sm text-white/70 leading-relaxed">
+                Your cellular recovery loop is functioning optimally today. Maintain current metrics.
               </p>
-              <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 transition-all duration-300 py-3 px-6 rounded-2xl text-sm font-semibold inline-flex items-center gap-2 w-full justify-center relative z-10">
-                Detailed Analysis <ChevronRight size={16} />
-              </button>
             </section>
 
             <section>
-              <h2 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-4">Quick Check</h2>
+              <h2 className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-4 ml-1">Daily Log</h2>
               <div className="space-y-4">
                 {[
-                  { label: 'Sleep Quality', value: '7.5 hrs', icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/10' },
-                  { 
-                    label: 'Hydration', 
-                    value: `${waterConsumed.toFixed(1)} / 2.5 L`, 
-                    icon: waterConsumed >= 2.0 ? CheckCircle2 : AlertCircle, 
-                    color: waterConsumed >= 2.0 ? 'text-emerald-400' : 'text-amber-400', 
-                    bg: waterConsumed >= 2.0 ? 'bg-emerald-400/10' : 'bg-amber-400/10', 
-                    border: waterConsumed >= 2.0 ? 'border-emerald-400/10' : 'border-amber-400/10' 
-                  },
-                  { label: 'Meditation', value: `${meditationSessions} sessions`, icon: Wind, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/10' },
+                  { label: 'Sleep Quality', value: permissionGranted ? `${sleepQuality}h` : 'Locked', icon: Wind, color: 'text-purple-400', bg: 'bg-purple-500/20 border-purple-500/20' },
+                  { label: 'Screen Time', value: `${profile.screenTime}h`, icon: Smartphone, color: 'text-orange-400', bg: 'bg-orange-500/20 border-orange-500/20' },
+                  { label: 'Hydration', value: `${waterConsumed.toFixed(1)}/2.5L`, icon: Droplets, color: 'text-blue-400', bg: 'bg-blue-500/20 border-blue-500/20' },
                 ].map((item, idx) => (
-                  <div key={idx} className="bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex justify-between items-center hover:bg-white/10 transition-colors">
+                  <div key={idx} className="bg-white/5 backdrop-blur-lg p-4 rounded-2xl border border-white/10 flex justify-between items-center transition-all hover:bg-white/10">
                     <div className="flex items-center gap-4">
-                      <div className={`${item.bg} ${item.border} border p-2 rounded-xl`}>
+                      <div className={`${item.bg} p-3 rounded-xl border`}>
                         <item.icon className={item.color} size={20} />
                       </div>
-                      <span className="font-medium text-white/90">{item.label}</span>
+                      <span className="text-sm font-medium text-white/90">{item.label}</span>
                     </div>
-                    <span className="font-bold tracking-wider">{item.value}</span>
+                    <span className="text-lg font-semibold tracking-tight text-white">{item.value}</span>
                   </div>
                 ))}
               </div>
@@ -244,51 +307,53 @@ const App = () => {
         {activeTab === 'calculator' && (
           <div className="space-y-8 animate-in slide-in-from-right duration-500">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight mb-1 font-serif">Calculator</h2>
-              <p className="text-white/50 text-sm">Measure your body metrics</p>
+              <h2 className="text-3xl font-semibold tracking-tight mb-2 text-white">Calculator</h2>
+              <p className="text-white/50 text-sm">Measure biometrics for system calibration</p>
             </div>
 
-            <div className="bg-white/5 backdrop-blur-xl p-7 rounded-[2.5rem] border border-white/10 shadow-2xl space-y-6">
-              <div className="flex items-center gap-3 text-emerald-400 mb-6 border-b border-white/10 pb-4">
+            <div className="bg-white/10 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] space-y-8">
+              <div className="flex items-center gap-3 text-emerald-400 mb-6 border-b border-white/10 pb-6">
                 <Scale size={24} />
-                <span className="font-bold text-lg tracking-wide text-white uppercase">Body Mass Index</span>
+                <span className="font-bold text-[11px] tracking-widest text-white uppercase">Body Mass Index</span>
               </div>
               
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 ml-1">Height (cm)</label>
-                  <input 
-                    type="number" 
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-400/50 focus:bg-white/10 transition-all text-white placeholder-white/20 text-lg"
-                    placeholder="175"
-                    value={bmiData.height}
-                    onChange={(e) => setBmiData({...bmiData, height: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 ml-1">Weight (kg)</label>
-                  <input 
-                    type="number" 
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-400/50 focus:bg-white/10 transition-all text-white placeholder-white/20 text-lg"
-                    placeholder="70"
-                    value={bmiData.weight}
-                    onChange={(e) => setBmiData({...bmiData, weight: e.target.value})}
-                  />
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-white/50 uppercase tracking-widest mb-3 ml-1">Height (cm)</label>
+                    <input 
+                      type="number" 
+                      className="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-500/50 transition-all text-white font-semibold text-lg"
+                      placeholder="175"
+                      value={bmiData.height}
+                      onChange={(e) => setBmiData({...bmiData, height: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-white/50 uppercase tracking-widest mb-3 ml-1">Weight (kg)</label>
+                    <input 
+                      type="number" 
+                      className="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-500/50 transition-all text-white font-semibold text-lg"
+                      placeholder="70"
+                      value={bmiData.weight}
+                      onChange={(e) => setBmiData({...bmiData, weight: e.target.value})}
+                    />
+                  </div>
                 </div>
                 <button 
                   onClick={calculateBMI}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition-all"
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm uppercase tracking-widest py-5 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95 transition-all"
                 >
-                  Calculate Results
+                  Calculate BMI
                 </button>
               </div>
 
               {bmiResult && (
                 <div className="mt-8 pt-8 border-t border-white/10 text-center animate-in zoom-in duration-300">
-                  <p className="text-white/40 text-xs uppercase tracking-widest mb-2">Analysis</p>
-                  <p className="text-7xl font-black my-2 drop-shadow-2xl">{bmiResult.value}</p>
-                  <div className={`inline-block px-5 py-2 rounded-full bg-white/5 border border-white/10 mt-2`}>
-                    <p className={`font-bold tracking-widest uppercase text-xs ${bmiResult.color} drop-shadow-[0_0_8px_currentColor]`}>
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-2">Your Result</p>
+                  <p className="text-7xl font-bold mb-4 text-white tracking-tighter">{bmiResult.value}</p>
+                  <div className={`inline-block px-6 py-2 rounded-full border ${bmiResult.color}`}>
+                    <p className="font-bold tracking-widest uppercase text-[11px]">
                       {bmiResult.category}
                     </p>
                   </div>
@@ -301,88 +366,96 @@ const App = () => {
         {activeTab === 'checker' && (
           <div className="space-y-8 animate-in slide-in-from-right duration-500">
              <div>
-               <h2 className="text-3xl font-bold tracking-tight mb-1 font-serif">Health Guard</h2>
-               <p className="text-white/50 text-sm">Precision habit tracking</p>
+               <h2 className="text-3xl font-semibold tracking-tight mb-2 text-white">Health Guard</h2>
+               <p className="text-white/50 text-sm">Habit loops and precision tracking</p>
              </div>
 
-             <div className="space-y-5">
-                {/* Body Temp */}
-                <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-2xl">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="font-semibold flex items-center gap-2 text-white/80">
+             <div className="space-y-6">
+                {/* Body Temp with Scanner Logic */}
+                <div className="bg-white/10 backdrop-blur-2xl p-7 rounded-[2.5rem] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] relative overflow-hidden">
+                  <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-5">
+                    <span className="font-bold flex items-center gap-3 text-[11px] uppercase tracking-widest text-white/60">
                       <Thermometer size={18} className="text-orange-400"/> 
-                      Body Temp
+                      Body Temperature
                     </span>
-                    <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] px-3 py-1 rounded-lg font-black tracking-widest uppercase">Normal</span>
+                    <button 
+                      onClick={scanTemperature}
+                      disabled={isScanningTemp}
+                      className="flex items-center gap-2 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-orange-500/30 text-[10px] px-4 py-1.5 rounded-xl font-bold tracking-widest uppercase transition-all disabled:opacity-50"
+                    >
+                      {isScanningTemp ? <Loader2 size={12} className="animate-spin" /> : <ScanLine size={12} />}
+                      {isScanningTemp ? 'Scanning' : 'Measure'}
+                    </button>
                   </div>
                   <div className="flex items-end gap-2">
-                    <span className="text-5xl font-black tracking-tighter">36.6</span>
-                    <span className="text-white/30 pb-2 text-xl font-light">°C</span>
+                    <span className={`text-6xl font-semibold tracking-tighter transition-all duration-500 ${isScanningTemp ? 'opacity-30 blur-sm' : 'opacity-100 blur-0'}`}>
+                      {bodyTemp}
+                    </span>
+                    <span className="text-white/40 pb-2 text-2xl font-light">°C</span>
                   </div>
                 </div>
 
                 {/* Hydration Tracker */}
-                <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-2xl">
-                  <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-                    <h3 className="font-semibold text-lg flex items-center gap-2 text-white/90">
-                      <Droplets className="text-blue-400" size={20} />
-                      Hydration
+                <div className="bg-white/10 backdrop-blur-2xl p-7 rounded-[2.5rem] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
+                  <div className="flex justify-between items-center mb-8">
+                    <h3 className="font-bold text-[11px] uppercase tracking-widest flex items-center gap-3 text-white/60">
+                      <Droplets className="text-blue-400" size={18} />
+                      Intake Tracker
                     </h3>
-                    <span className="text-[10px] text-white/40 font-black tracking-widest">{waterConsumed.toFixed(1)}L / 2.5L</span>
+                    <span className="text-[11px] text-emerald-400 font-bold tracking-widest">{waterConsumed.toFixed(1)}L / 2.5L</span>
                   </div>
                   
-                  <div className="relative mt-2">
-                    <div className="absolute top-[1.35rem] left-6 right-6 h-0.5 bg-white/10 z-0"></div>
-                    <div className="flex justify-between relative z-10">
-                      {hydrationLog.map((log) => (
-                        <div key={log.id} className="flex flex-col items-center gap-3">
-                          <button 
-                            onClick={() => toggleHydration(log.id)}
-                            className={`w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
-                              log.status === 'yes' ? 'bg-emerald-500/10 border-emerald-400 text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.3)]' :
-                              log.status === 'no' ? 'bg-rose-500/10 border-rose-400 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.3)]' :
-                              'bg-black/60 border-white/10 text-white/20 hover:border-white/40'
-                            }`}
-                          >
-                            {log.status === 'yes' && <Check size={20} strokeWidth={3} />}
-                            {log.status === 'no' && <X size={20} strokeWidth={3} />}
-                            {log.status === 'pending' && <BellRing size={14} className="opacity-30" />}
-                          </button>
-                          <p className="text-[9px] font-black text-white/40 tracking-tighter uppercase">{log.time}</p>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="flex justify-between items-center px-1">
+                    {hydrationLog.map((log) => (
+                      <div key={log.id} className="flex flex-col items-center gap-4">
+                        <button 
+                          onClick={() => toggleHydration(log.id)}
+                          className={`w-12 h-12 rounded-2xl border-2 transition-all duration-300 shadow-lg ${
+                            log.status === 'yes' ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400' :
+                            log.status === 'no' ? 'bg-rose-500/20 border-rose-400 text-rose-400' :
+                            'bg-black/40 border-white/10 text-white/20 hover:border-white/30'
+                          }`}
+                        >
+                          <div className="flex items-center justify-center h-full">
+                            {log.status === 'yes' && <Check size={22} strokeWidth={3} />}
+                            {log.status === 'no' && <X size={22} strokeWidth={3} />}
+                            {log.status === 'pending' && <BellRing size={16} className="opacity-40" />}
+                          </div>
+                        </button>
+                        <p className="text-[9px] font-bold text-white/40 tracking-widest uppercase">{log.time}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
                 {/* Zen Timer Panel */}
-                <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-2xl">
-                  <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-                    <h3 className="font-semibold text-lg flex items-center gap-2 text-white/90">
-                      <Wind className="text-purple-400" size={20} />
-                      Zen Timer
+                <div className="bg-white/10 backdrop-blur-2xl p-7 rounded-[2.5rem] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
+                  <div className="flex justify-between items-center mb-8">
+                    <h3 className="font-bold text-[11px] uppercase tracking-widest flex items-center gap-3 text-white/60">
+                      <Wind className="text-purple-400" size={18} />
+                      Focus Loop
                     </h3>
-                    <span className="text-purple-400 text-[10px] px-3 py-1 bg-purple-500/10 rounded-lg font-black tracking-widest">
-                      {meditationSessions} SESSIONS
+                    <span className="text-purple-300 text-[10px] px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-lg font-bold tracking-widest uppercase">
+                      {meditationSessions} Active
                     </span>
                   </div>
                   
-                  <div className="flex flex-col items-center mb-6 px-4">
-                    <span className="text-5xl font-black text-white mb-4">{meditationMinutes}<span className="text-xl text-white/20 ml-1 font-light">min</span></span>
+                  <div className="flex flex-col items-center mb-8 px-4">
+                    <span className="text-5xl font-semibold text-white mb-6 tracking-tight">{meditationMinutes}<span className="text-xl text-white/40 ml-2 font-normal">min</span></span>
                     <input 
                       type="range" 
                       min="1" max="60" 
                       value={meditationMinutes} 
                       onChange={(e) => setMeditationMinutes(parseInt(e.target.value))}
-                      className="w-full accent-purple-500 bg-white/10 h-1.5 rounded-full appearance-none cursor-pointer"
+                      className="w-full accent-emerald-400 bg-white/10 h-2 rounded-full appearance-none cursor-pointer"
                     />
                   </div>
 
                   <button 
                     onClick={startMeditation}
-                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all"
+                    className="w-full bg-emerald-500 text-black font-bold text-[12px] uppercase tracking-widest py-5 rounded-2xl flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(16,185,129,0.3)] active:scale-95 transition-all"
                   >
-                    <Play fill="currentColor" size={20} /> Deep Concentration
+                    <Play fill="currentColor" size={16} /> Synchronize
                   </button>
                 </div>
              </div>
@@ -391,179 +464,138 @@ const App = () => {
       </main>
 
       {/* Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#0a0a0e]/80 backdrop-blur-2xl border-t border-white/10 flex justify-around px-2 pb-8 pt-3 z-30 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-black/70 backdrop-blur-2xl border-t border-white/10 flex justify-around px-2 pb-10 pt-4 z-30 shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
         <NavItem id="dashboard" icon={Activity} label="Status" />
-        <NavItem id="calculator" icon={Calculator} label="Calc" />
+        <NavItem id="calculator" icon={Scale} label="Calc" />
         <NavItem id="checker" icon={ShieldCheck} label="Guard" />
       </nav>
 
-      {/* --- Profile Glassmorphism Panel (Overlay) --- */}
+      {/* Profile Overlay */}
       {isProfileOpen && (
-        <div className="absolute inset-0 z-50 bg-black/95 animate-in fade-in duration-300 flex flex-col">
-          <div className="flex-1 overflow-y-auto px-6 pt-10 pb-10 no-scrollbar">
-            
-            {/* Header / Close */}
+        <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-3xl animate-in slide-in-from-bottom duration-500 flex flex-col">
+          <div className="flex-1 overflow-y-auto px-6 pt-12 pb-16 no-scrollbar">
             <div className="flex justify-between items-center mb-10">
-              <h2 className="text-2xl font-black tracking-tighter uppercase font-serif">User Profile</h2>
+              <h2 className="text-xl font-bold tracking-widest uppercase text-white">User Profile</h2>
               <button 
-                onClick={() => setIsProfileOpen(false)}
-                className="p-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full text-white/70 hover:text-white"
+                onClick={() => { setIsProfileOpen(false); setIsEditing(null); }} 
+                className="p-3 bg-white/10 border border-white/20 rounded-2xl text-white/80 active:scale-90 shadow-lg"
               >
                 <X size={20} />
               </button>
             </div>
 
-            {/* Profile Info Cards (Glass Morphism) */}
             <div className="space-y-6">
-              
-              {/* Primary Identity Card */}
-              <div className="bg-white/5 backdrop-blur-3xl p-8 rounded-[3rem] border border-white/10 flex flex-col items-center text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-purple-500 to-blue-500"></div>
-                <div className="w-24 h-24 bg-gradient-to-tr from-emerald-400 to-blue-500 rounded-full flex items-center justify-center p-1 mb-6 shadow-2xl">
-                  <div className="w-full h-full bg-[#0a0a0e] rounded-full flex items-center justify-center">
-                    <User size={48} className="text-white/80" />
+              {/* Profile Main Card */}
+              <div className="bg-white/10 backdrop-blur-2xl p-10 rounded-[3rem] border border-white/20 flex flex-col items-center text-center relative shadow-[0_8px_32px_0_rgba(0,0,0,0.4)]">
+                
+                <div className="relative mb-6">
+                  <div className="w-28 h-28 bg-gradient-to-br from-emerald-400 to-blue-500 rounded-full flex items-center justify-center p-1 shadow-xl">
+                    <div className="w-full h-full bg-[#050505] rounded-full flex items-center justify-center overflow-hidden">
+                      <User size={48} className="text-white/80" />
+                    </div>
                   </div>
                 </div>
-                <h3 className="text-3xl font-black tracking-tight mb-1">Venki Venom</h3>
-                <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-black tracking-[0.2em] uppercase bg-emerald-500/10 px-4 py-1.5 rounded-full border border-emerald-500/20">
-                  <Gem size={12} /> Premium Active
+
+                <div className="flex items-center gap-3 justify-center mb-4">
+                  {isEditing === 'name' ? (
+                    <input 
+                      className="bg-black/50 border-b-2 border-emerald-400 text-2xl font-bold text-center w-full focus:outline-none py-1 rounded-none text-white"
+                      value={profile.name}
+                      autoFocus
+                      onChange={(e) => handleProfileUpdate('name', e.target.value)}
+                      onBlur={() => setIsEditing(null)}
+                      onKeyDown={(e) => e.key === 'Enter' && setIsEditing(null)}
+                    />
+                  ) : (
+                    <>
+                      <h3 className="text-3xl font-semibold tracking-tight text-white">{profile.name}</h3>
+                      <button onClick={() => setIsEditing('name')} className="text-white/40 hover:text-emerald-400 transition-colors p-1">
+                        <Pencil size={18} />
+                      </button>
+                    </>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-bold tracking-widest uppercase bg-emerald-500/10 px-6 py-2 rounded-full border border-emerald-500/20">
+                  <Gem size={14} className="fill-current" /> Premium Sync
                 </div>
               </div>
 
-              {/* Grid Details */}
+              {/* Data Grid with Edit Icons */}
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { label: 'Gender', value: 'Male', icon: UserCircle },
-                  { label: 'Age', value: '24', icon: Activity },
-                  { label: 'Birthday', value: '26 Oct 2001', icon: Calendar },
-                  { label: 'Country', value: 'Australia', icon: MapPin },
-                  { label: 'City', value: 'Sydney', icon: MapPin },
-                  { label: 'Contact', value: '+61 4XX XXX XXX', icon: Phone },
-                  { label: 'Weight', value: '70 kg', icon: Scale },
-                  { label: 'Height', value: '175 cm', icon: Ruler },
+                  { label: 'Age (Years)', value: profile.age, field: 'age', icon: Activity },
+                  { label: 'Screen Log', value: `${profile.screenTime} h`, field: 'screenTime', icon: Smartphone },
+                  { label: 'Location', value: profile.city, field: 'city', icon: MapPin },
+                  { label: 'Country', value: profile.country, field: 'country', icon: MapPin },
                 ].map((item, i) => (
-                  <div key={i} className="bg-white/5 backdrop-blur-xl p-5 rounded-3xl border border-white/10">
-                    <item.icon size={14} className="text-white/30 mb-2" />
-                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">{item.label}</p>
-                    <p className="font-bold text-white/90">{item.value}</p>
+                  <div key={i} className="bg-white/10 backdrop-blur-2xl p-6 rounded-[2rem] border border-white/20 relative shadow-lg">
+                    <item.icon size={18} className="text-white/40 mb-3" />
+                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-1">{item.label}</p>
+                    <p className="font-semibold text-white text-lg">{item.value}</p>
+                    <button 
+                      className="absolute top-5 right-5 p-2 bg-white/5 rounded-full text-white/40 hover:text-emerald-400 hover:bg-white/10 transition-colors"
+                      onClick={() => {
+                        const val = prompt(`Update ${item.label}:`, item.value.toString().replace(' h', ''));
+                        if (val) {
+                          const parsed = item.field === 'screenTime' ? parseFloat(val) || 0 : val;
+                          handleProfileUpdate(item.field, parsed);
+                        }
+                      }}
+                    >
+                      <Pencil size={12} />
+                    </button>
                   </div>
                 ))}
               </div>
 
-              {/* Extended Info Panel */}
-              <div className="bg-white/5 backdrop-blur-2xl p-6 rounded-[2.5rem] border border-white/10 space-y-5">
-                <div className="flex items-start gap-4 pb-4 border-b border-white/10">
-                   <Mail size={18} className="text-purple-400 mt-1" />
-                   <div>
-                     <p className="text-[10px] font-black text-white/30 tracking-widest uppercase">Email Address</p>
-                     <p className="text-sm font-bold">venkivenom@healthguard.au</p>
-                   </div>
+              {/* Empty Marketplace */}
+              <div className="mt-8">
+                <h4 className="text-[11px] font-bold text-white/40 tracking-widest uppercase px-2 mb-4">Marketplace</h4>
+                <div className="bg-white/5 backdrop-blur-lg border border-dashed border-white/20 p-12 rounded-[2.5rem] flex flex-col items-center justify-center text-center">
+                  <Barcode size={40} className="mb-4 text-white/20" />
+                  <p className="text-sm font-semibold text-white/60">No Coupons Active</p>
+                  <p className="text-[10px] mt-2 text-white/30 uppercase tracking-widest">Protocol achievements required</p>
                 </div>
-                <div className="flex items-start gap-4 pb-4 border-b border-white/10">
-                   <Phone size={18} className="text-rose-400 mt-1" />
-                   <div>
-                     <p className="text-[10px] font-black text-white/30 tracking-widest uppercase">Emergency Contact</p>
-                     <p className="text-sm font-bold">+61 000 000 000</p>
-                   </div>
-                </div>
-                <div className="flex items-start gap-4">
-                   <Heart size={18} className="text-emerald-400 mt-1" />
-                   <div>
-                     <p className="text-[10px] font-black text-white/30 tracking-widest uppercase">Interests</p>
-                     <p className="text-sm font-bold">Meditation, Bio-hacking, HIIT, Psychology</p>
-                   </div>
-                </div>
-              </div>
-
-              {/* Offers/Coupons Section - Styled after Ticket Screenshot */}
-              <div className="mt-8 space-y-4">
-                <h4 className="text-[10px] font-black text-white/40 tracking-widest uppercase px-2 mb-4">My Offers & Coupons</h4>
-                
-                {/* Glass Ticket Card */}
-                <div className="relative overflow-hidden group">
-                  <div className="bg-white/10 backdrop-blur-3xl p-6 rounded-[2rem] border border-white/20 flex items-center justify-between shadow-2xl relative">
-                    {/* Notch Cutouts for Ticket Effect */}
-                    <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-black rounded-full border border-white/20"></div>
-                    <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-black rounded-full border border-white/20"></div>
-                    
-                    <div className="flex-1 border-r border-dashed border-white/20 pr-6 mr-6">
-                      <p className="text-[10px] font-black text-emerald-400 tracking-widest uppercase mb-1">Valid Until Oct 2026</p>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-5xl font-black tracking-tighter italic">30</span>
-                        <span className="text-2xl font-black">% OFF</span>
-                      </div>
-                      <p className="text-xs font-bold text-white/60 mt-1 uppercase">Any Wellness Retreat</p>
-                    </div>
-
-                    <div className="flex flex-col items-center gap-2">
-                       <Barcode size={40} className="text-white/40" />
-                       <span className="text-[8px] font-mono tracking-widest text-white/20">#AU-HGUARD-26</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Smaller Partner Offer */}
-                <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-xl p-6 rounded-3xl border border-white/10 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
-                    <Ticket size={24} className="text-blue-300" />
-                  </div>
-                  <div>
-                    <h5 className="font-bold text-sm">2-for-1 Gym Pass</h5>
-                    <p className="text-[10px] font-medium text-white/40 uppercase">Partner: Fitness First AU</p>
-                  </div>
-                  <ChevronRight size={16} className="ml-auto text-white/30" />
-                </div>
-
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Meditation Overlay */}
+      {/* Meditation Loop Overlay */}
       {isMeditating && (
-        <div className="absolute inset-0 z-50 bg-[#060608]/98 backdrop-blur-3xl flex flex-col items-center justify-center p-6 animate-in fade-in duration-500">
-          <div className="bg-white/5 backdrop-blur-[40px] p-8 rounded-[4rem] border border-white/10 flex flex-col items-center w-full max-w-[320px] relative overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.8)]">
-            <div className="absolute -top-10 -left-10 w-40 h-40 bg-purple-500/20 rounded-full blur-[80px] animate-pulse"></div>
-            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }}></div>
-
-            <h2 className="text-white/40 uppercase tracking-[0.4em] text-[10px] font-black mb-10 relative z-10">Neural Alignment</h2>
-
-            <div className="relative w-32 h-32 flex items-center justify-center animate-[bounce_5s_ease-in-out_infinite] mb-12 z-10">
-               <div className="absolute inset-0 bg-purple-400/10 rounded-full blur-2xl animate-ping" style={{ animationDuration: '4s' }}></div>
-               <Wind size={64} className="text-purple-200/80 drop-shadow-[0_0_20px_rgba(216,180,254,0.4)]" />
+        <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-2xl flex flex-col items-center justify-center p-6 animate-in fade-in duration-700">
+          <div className="bg-white/10 backdrop-blur-3xl p-10 rounded-[4rem] border border-white/20 flex flex-col items-center w-full max-w-[340px] relative shadow-[0_8px_32px_0_rgba(16,185,129,0.2)]">
+            <h2 className="text-emerald-400 text-[11px] uppercase tracking-widest font-bold mb-12">Focus Synchronization</h2>
+            <div className="relative w-36 h-36 flex items-center justify-center animate-pulse mb-12">
+               <div className="absolute inset-0 border-2 border-emerald-500/20 rounded-full animate-ping duration-[3000ms]"></div>
+               <Wind size={64} className="text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.5)]" />
             </div>
+            
+            <p className="mb-10 text-[11px] font-medium text-center text-white/60 leading-relaxed">
+              Disconnect from external stimuli. Calibrate breathing to internal rhythm.
+            </p>
 
-            <div className="text-6xl font-black tracking-[0.1em] text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] mb-12 relative z-10 font-mono">
+            <div className="text-7xl font-semibold tracking-tight text-white mb-12 font-mono drop-shadow-md">
               {formatTime(timeRemaining)}
             </div>
-
             <button 
-              onClick={stopMeditation}
-              className="bg-white/5 border border-white/20 hover:bg-white/10 text-white/60 hover:text-white px-10 py-4 rounded-full font-black tracking-[0.2em] text-[10px] uppercase transition-all flex items-center gap-2 relative z-10"
+              onClick={() => setIsMeditating(false)}
+              className="bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 hover:text-white px-10 py-5 rounded-2xl font-bold tracking-widest text-[11px] uppercase transition-all flex items-center gap-3 active:scale-95 shadow-lg"
             >
-              <Square fill="currentColor" size={10} /> Disconnect
+              <Square fill="currentColor" size={12} /> De-Sync
             </button>
           </div>
         </div>
       )}
 
-      {/* --- Audio Element: Brainwave Entrainment Frequencies --- */}
-      <audio 
-        ref={audioRef} 
-        src="theta-4-to-8-hz-brainwave-entrainment-frequencies-290051 (1).mp3" 
-        loop 
-        preload="auto" 
-      />
+      {/* OS Variations: iOS/Android Safe Area Handle */}
+      <div className="h-8 w-full bg-[#050505] shrink-0 relative flex justify-center items-end pb-2">
+        <div className="w-32 h-1 bg-white/20 rounded-full"></div>
+      </div>
     </div>
   );
 };
-
-const Ruler = ({ size, className }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M21.3 15.3l-9.3-9.3c-.4-.4-1-.4-1.4 0l-4.3 4.2c-.4.4-.4 1 0 1.4l9.3 9.3c.4.4 1 .4 1.4 0l4.3-4.2c.4-.4.4-1 0-1.4z"/>
-    <path d="M7 14l-1.5-1.5"/><path d="M10 11l-1.5-1.5"/><path d="M13 8l-1.5-1.5"/>
-  </svg>
-);
 
 export default App;
