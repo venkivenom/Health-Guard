@@ -18,21 +18,39 @@ import {
   BellRing,
   Wind,
   Play,
-  Square
+  Square,
+  Ticket,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  UserCircle,
+  Gem,
+  Award,
+  Barcode
 } from 'lucide-react';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [bmiData, setBmiData] = useState({ weight: '', height: '' });
   const [bmiResult, setBmiResult] = useState(null);
   
-  // Hydration 5-Point Tracker State (500ml each = 2.5L total)
+  // Hydration 5-Point Tracker State
   const [hydrationLog, setHydrationLog] = useState([
     { id: 1, time: '9 AM', period: '6am-9am', status: 'pending' },
     { id: 2, time: '12 PM', period: '9am-12pm', status: 'pending' },
     { id: 3, time: '3 PM', period: '12pm-3pm', status: 'pending' },
     { id: 4, time: '6 PM', period: '3pm-6pm', status: 'pending' },
     { id: 5, time: '9 PM', period: '6pm-9pm', status: 'pending' },
+  ]);
+
+  // Daily Tasks State
+  const [tasks, setTasks] = useState([
+    { id: 1, label: '30m Exercise', completed: false },
+    { id: 2, label: 'No processed sugar', completed: false },
+    { id: 3, label: 'Mindfulness session', completed: false },
+    { id: 4, label: 'Reading 20 pages', completed: false },
   ]);
 
   // Meditation State
@@ -42,7 +60,7 @@ const App = () => {
   const [meditationSessions, setMeditationSessions] = useState(0);
   const audioRef = useRef(null);
 
-  // Timer Logic
+  // Meditation Timer Logic
   useEffect(() => {
     let interval;
     if (isMeditating && timeRemaining > 0) {
@@ -64,7 +82,7 @@ const App = () => {
     setTimeRemaining(meditationMinutes * 60);
     setIsMeditating(true);
     if (audioRef.current) {
-      audioRef.current.play().catch(e => console.log("Audio play failed. Note: Browsers may block autoplay until interaction.", e));
+      audioRef.current.play().catch(e => console.log("Audio playback delayed until user interaction", e));
     }
   };
 
@@ -94,10 +112,15 @@ const App = () => {
     }));
   };
 
-  // Calculate BMI Logic
+  const toggleTask = (id) => {
+    setTasks(prev => prev.map(task => 
+      task.id === id ? { ...task, completed: !task.completed } : task
+    ));
+  };
+
   const calculateBMI = () => {
     const w = parseFloat(bmiData.weight);
-    const h = parseFloat(bmiData.height) / 100; // convert cm to m
+    const h = parseFloat(bmiData.height) / 100;
     if (w > 0 && h > 0) {
       const bmi = (w / (h * h)).toFixed(1);
       let category = '';
@@ -125,35 +148,35 @@ const App = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0e] text-white font-sans flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden">
+    <div className="min-h-screen bg-[#060608] text-white font-sans flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden">
       
-      {/* --- Glassmorphism Background Orbs --- */}
-      <div className="absolute top-[-10%] left-[-20%] w-80 h-80 bg-purple-600/30 rounded-full mix-blend-screen filter blur-[80px] animate-pulse"></div>
-      <div className="absolute bottom-[10%] right-[-20%] w-96 h-96 bg-emerald-600/20 rounded-full mix-blend-screen filter blur-[90px] animate-pulse" style={{ animationDelay: '2s' }}></div>
-      <div className="absolute top-[30%] right-[10%] w-64 h-64 bg-amber-600/20 rounded-full mix-blend-screen filter blur-[70px] animate-pulse" style={{ animationDelay: '4s' }}></div>
+      {/* Background Decor */}
+      <div className="absolute top-[-10%] left-[-20%] w-80 h-80 bg-purple-600/20 rounded-full mix-blend-screen filter blur-[100px] animate-pulse"></div>
+      <div className="absolute bottom-[10%] right-[-20%] w-96 h-96 bg-emerald-600/15 rounded-full mix-blend-screen filter blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
 
       {/* Header */}
-      <header className="bg-white/5 backdrop-blur-xl px-6 py-5 border-b border-white/10 flex justify-between items-center sticky top-0 z-20 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+      <header className="bg-white/5 backdrop-blur-2xl px-6 py-5 border-b border-white/10 flex justify-between items-center sticky top-0 z-40">
         <div className="flex items-center gap-3 text-emerald-400">
           <ShieldCheck size={28} strokeWidth={2.5} className="drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
           <h1 className="text-xl font-bold tracking-widest uppercase text-white drop-shadow-md">HealthGuard</h1>
         </div>
-        <button className="p-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white/80 hover:bg-white/20 transition-all shadow-lg">
+        <button 
+          onClick={() => setIsProfileOpen(true)}
+          className="p-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white/80 hover:bg-white/20 transition-all shadow-lg active:scale-90"
+        >
           <User size={18} />
         </button>
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-6 pb-28 relative z-10 space-y-8 custom-scrollbar">
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto p-6 pb-28 relative z-10 space-y-8 no-scrollbar">
         
         {activeTab === 'dashboard' && (
           <div className="space-y-8 animate-in fade-in duration-700">
-            {/* Restored Daily Status Section */}
             <section>
               <h2 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-4">Daily Status</h2>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/10 backdrop-blur-lg p-5 rounded-3xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)] relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="bg-white/5 backdrop-blur-lg p-5 rounded-3xl border border-white/10 shadow-xl group">
                   <div className="bg-blue-500/20 text-blue-400 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-blue-500/30">
                     <Zap size={22} />
                   </div>
@@ -161,8 +184,7 @@ const App = () => {
                   <p className="text-2xl font-bold tracking-tight">4,281 <span className="text-xs text-white/40 font-normal">steps</span></p>
                 </div>
                 
-                <div className="bg-white/10 backdrop-blur-lg p-5 rounded-3xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)] relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="bg-white/5 backdrop-blur-lg p-5 rounded-3xl border border-white/10 shadow-xl group">
                   <div className="bg-rose-500/20 text-rose-400 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-rose-500/30">
                     <Heart size={22} className="animate-pulse" />
                   </div>
@@ -172,22 +194,20 @@ const App = () => {
               </div>
             </section>
 
-            {/* Restored Market Insight Section */}
-            <section className="bg-gradient-to-br from-emerald-500/40 to-emerald-900/40 backdrop-blur-xl rounded-[2rem] p-7 border border-emerald-400/30 shadow-[0_8px_32px_rgba(16,185,129,0.2)] relative overflow-hidden">
-              <div className="absolute -right-10 -top-10 bg-emerald-400/20 w-40 h-40 rounded-full blur-2xl"></div>
-              
+            <section className="bg-gradient-to-br from-emerald-500/20 to-emerald-900/30 backdrop-blur-xl rounded-[2.5rem] p-7 border border-emerald-400/20 shadow-2xl relative overflow-hidden">
+              <div className="absolute -right-10 -top-10 bg-emerald-400/10 w-40 h-40 rounded-full blur-2xl"></div>
               <div className="flex justify-between items-start mb-6 relative z-10">
                 <div>
-                  <h3 className="text-2xl font-bold tracking-tight">Market Insight</h3>
-                  <p className="text-emerald-200/80 text-xs uppercase tracking-widest mt-2">Version 1.0 (2026 Ready)</p>
+                  <h3 className="text-2xl font-bold tracking-tight">Health Index</h3>
+                  <p className="text-emerald-200/60 text-xs uppercase tracking-widest mt-2">Personal Score: 88/100</p>
                 </div>
-                <ShieldCheck className="text-emerald-300 drop-shadow-[0_0_15px_rgba(110,231,183,0.6)]" size={48} />
+                <Award className="text-emerald-300 drop-shadow-[0_0_15px_rgba(110,231,183,0.6)]" size={32} />
               </div>
-              <p className="text-sm text-emerald-50/90 leading-relaxed mb-6 relative z-10 font-light">
-                Built for the Australian preventative health landscape. Privacy-first, open-source, and ready for integration.
+              <p className="text-sm text-emerald-50/70 leading-relaxed mb-6 relative z-10 font-light">
+                Your performance is 12% higher than last week. Maintain your hydration levels to reach 95.
               </p>
-              <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 transition-all duration-300 py-3 px-6 rounded-full text-sm font-semibold inline-flex items-center gap-2 w-full justify-center relative z-10 shadow-lg">
-                Learn more <ChevronRight size={16} />
+              <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 transition-all duration-300 py-3 px-6 rounded-2xl text-sm font-semibold inline-flex items-center gap-2 w-full justify-center relative z-10">
+                Detailed Analysis <ChevronRight size={16} />
               </button>
             </section>
 
@@ -195,18 +215,18 @@ const App = () => {
               <h2 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-4">Quick Check</h2>
               <div className="space-y-4">
                 {[
-                  { label: 'Sleep Quality', value: '7.5 hrs', icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
+                  { label: 'Sleep Quality', value: '7.5 hrs', icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/10' },
                   { 
                     label: 'Hydration', 
                     value: `${waterConsumed.toFixed(1)} / 2.5 L`, 
                     icon: waterConsumed >= 2.0 ? CheckCircle2 : AlertCircle, 
                     color: waterConsumed >= 2.0 ? 'text-emerald-400' : 'text-amber-400', 
                     bg: waterConsumed >= 2.0 ? 'bg-emerald-400/10' : 'bg-amber-400/10', 
-                    border: waterConsumed >= 2.0 ? 'border-emerald-400/20' : 'border-amber-400/20' 
+                    border: waterConsumed >= 2.0 ? 'border-emerald-400/10' : 'border-amber-400/10' 
                   },
-                  { label: 'Meditation', value: `${meditationSessions} sessions`, icon: Wind, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/20' },
+                  { label: 'Meditation', value: `${meditationSessions} sessions`, icon: Wind, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/10' },
                 ].map((item, idx) => (
-                  <div key={idx} className="bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex justify-between items-center shadow-lg hover:bg-white/10 transition-colors">
+                  <div key={idx} className="bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex justify-between items-center hover:bg-white/10 transition-colors">
                     <div className="flex items-center gap-4">
                       <div className={`${item.bg} ${item.border} border p-2 rounded-xl`}>
                         <item.icon className={item.color} size={20} />
@@ -224,65 +244,56 @@ const App = () => {
         {activeTab === 'calculator' && (
           <div className="space-y-8 animate-in slide-in-from-right duration-500">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight mb-1">Calculator</h2>
-              <p className="text-white/50 text-sm">Measure your wellness metrics</p>
+              <h2 className="text-3xl font-bold tracking-tight mb-1 font-serif">Calculator</h2>
+              <p className="text-white/50 text-sm">Measure your body metrics</p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-xl p-7 rounded-[2rem] border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)] space-y-6">
+            <div className="bg-white/5 backdrop-blur-xl p-7 rounded-[2.5rem] border border-white/10 shadow-2xl space-y-6">
               <div className="flex items-center gap-3 text-emerald-400 mb-6 border-b border-white/10 pb-4">
                 <Scale size={24} />
-                <span className="font-bold text-lg tracking-wide text-white">BMI Index</span>
+                <span className="font-bold text-lg tracking-wide text-white uppercase">Body Mass Index</span>
               </div>
               
               <div className="space-y-5">
                 <div>
-                  <label className="block text-xs font-semibold text-white/60 uppercase tracking-wider mb-2 ml-1">Height (cm)</label>
+                  <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 ml-1">Height (cm)</label>
                   <input 
                     type="number" 
-                    className="w-full bg-black/20 border border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-400/50 focus:bg-white/5 transition-all text-white placeholder-white/30 text-lg shadow-inner"
-                    placeholder="e.g. 175"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-400/50 focus:bg-white/10 transition-all text-white placeholder-white/20 text-lg"
+                    placeholder="175"
                     value={bmiData.height}
                     onChange={(e) => setBmiData({...bmiData, height: e.target.value})}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-white/60 uppercase tracking-wider mb-2 ml-1">Weight (kg)</label>
+                  <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 ml-1">Weight (kg)</label>
                   <input 
                     type="number" 
-                    className="w-full bg-black/20 border border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-400/50 focus:bg-white/5 transition-all text-white placeholder-white/30 text-lg shadow-inner"
-                    placeholder="e.g. 70"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-400/50 focus:bg-white/10 transition-all text-white placeholder-white/20 text-lg"
+                    placeholder="70"
                     value={bmiData.weight}
                     onChange={(e) => setBmiData({...bmiData, weight: e.target.value})}
                   />
                 </div>
                 <button 
                   onClick={calculateBMI}
-                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-lg py-4 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] active:scale-[0.98] transition-all"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition-all"
                 >
-                  Calculate BMI
+                  Calculate Results
                 </button>
               </div>
 
               {bmiResult && (
                 <div className="mt-8 pt-8 border-t border-white/10 text-center animate-in zoom-in duration-300">
-                  <p className="text-white/50 text-xs uppercase tracking-widest mb-2">Your Result</p>
-                  <p className="text-6xl font-black my-2 drop-shadow-lg">{bmiResult.value}</p>
-                  <div className={`inline-block px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mt-2`}>
-                    <p className={`font-bold tracking-widest uppercase text-sm ${bmiResult.color} drop-shadow-[0_0_8px_currentColor]`}>
+                  <p className="text-white/40 text-xs uppercase tracking-widest mb-2">Analysis</p>
+                  <p className="text-7xl font-black my-2 drop-shadow-2xl">{bmiResult.value}</p>
+                  <div className={`inline-block px-5 py-2 rounded-full bg-white/5 border border-white/10 mt-2`}>
+                    <p className={`font-bold tracking-widest uppercase text-xs ${bmiResult.color} drop-shadow-[0_0_8px_currentColor]`}>
                       {bmiResult.category}
                     </p>
                   </div>
                 </div>
               )}
-            </div>
-
-            <div className="bg-blue-500/10 backdrop-blur-md p-5 rounded-2xl border border-blue-400/20 shadow-lg">
-              <div className="flex gap-4 items-start">
-                <Info size={24} className="text-blue-400 shrink-0 mt-0.5" />
-                <p className="text-sm text-blue-100/80 leading-relaxed font-light">
-                  The Healthy Weight Range for most adults in Australia is a BMI between 18.5 and 24.9.
-                </p>
-              </div>
             </div>
           </div>
         )}
@@ -290,177 +301,269 @@ const App = () => {
         {activeTab === 'checker' && (
           <div className="space-y-8 animate-in slide-in-from-right duration-500">
              <div>
-               <h2 className="text-3xl font-bold tracking-tight mb-1">Health Guard</h2>
-               <p className="text-white/50 text-sm">Real-time habit tracking</p>
+               <h2 className="text-3xl font-bold tracking-tight mb-1 font-serif">Health Guard</h2>
+               <p className="text-white/50 text-sm">Precision habit tracking</p>
              </div>
 
              <div className="space-y-5">
-                <div className="bg-white/10 backdrop-blur-xl p-6 rounded-3xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex flex-col justify-between">
+                {/* Body Temp */}
+                <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-2xl">
                   <div className="flex justify-between items-center mb-4">
-                    <span className="font-semibold flex items-center gap-2 text-white/90">
-                      <Thermometer size={20} className="text-orange-400 drop-shadow-[0_0_5px_rgba(251,146,60,0.8)]"/> 
+                    <span className="font-semibold flex items-center gap-2 text-white/80">
+                      <Thermometer size={18} className="text-orange-400"/> 
                       Body Temp
                     </span>
-                    <span className="bg-white/5 px-3 py-1 rounded-full text-white/40 font-mono text-[10px] tracking-widest uppercase border border-white/10">Manual</span>
+                    <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] px-3 py-1 rounded-lg font-black tracking-widest uppercase">Normal</span>
                   </div>
-                  <div className="flex items-end gap-2 mt-2">
+                  <div className="flex items-end gap-2">
                     <span className="text-5xl font-black tracking-tighter">36.6</span>
-                    <span className="text-white/40 pb-2 text-xl">°C</span>
-                    <span className="ml-auto bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider">Normal</span>
+                    <span className="text-white/30 pb-2 text-xl font-light">°C</span>
                   </div>
                 </div>
 
-                {/* 5-Point Hydration Tracker */}
-                <div className="bg-white/10 backdrop-blur-xl p-6 rounded-3xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                {/* Hydration Tracker */}
+                <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-2xl">
                   <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
                     <h3 className="font-semibold text-lg flex items-center gap-2 text-white/90">
-                      <Droplets className="text-blue-400 drop-shadow-[0_0_5px_rgba(96,165,250,0.8)]" size={20} />
-                      Smart Hydration
+                      <Droplets className="text-blue-400" size={20} />
+                      Hydration
                     </h3>
-                    <span className="text-xs text-white/50 font-mono font-bold tracking-wider">{waterConsumed.toFixed(1)}L / 2.5L</span>
+                    <span className="text-[10px] text-white/40 font-black tracking-widest">{waterConsumed.toFixed(1)}L / 2.5L</span>
                   </div>
                   
                   <div className="relative mt-2">
-                    {/* Background line connecting the dots */}
                     <div className="absolute top-[1.35rem] left-6 right-6 h-0.5 bg-white/10 z-0"></div>
-                    
                     <div className="flex justify-between relative z-10">
                       {hydrationLog.map((log) => (
                         <div key={log.id} className="flex flex-col items-center gap-3">
                           <button 
                             onClick={() => toggleHydration(log.id)}
                             className={`w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
-                              log.status === 'yes' ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.5)]' :
-                              log.status === 'no' ? 'bg-rose-500/20 border-rose-400 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.5)]' :
-                              'bg-black/60 border-white/20 text-white/30 hover:border-white/50 hover:bg-white/5'
+                              log.status === 'yes' ? 'bg-emerald-500/10 border-emerald-400 text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.3)]' :
+                              log.status === 'no' ? 'bg-rose-500/10 border-rose-400 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.3)]' :
+                              'bg-black/60 border-white/10 text-white/20 hover:border-white/40'
                             }`}
                           >
                             {log.status === 'yes' && <Check size={20} strokeWidth={3} />}
                             {log.status === 'no' && <X size={20} strokeWidth={3} />}
-                            {log.status === 'pending' && <BellRing size={16} className="opacity-40" />}
+                            {log.status === 'pending' && <BellRing size={14} className="opacity-30" />}
                           </button>
-                          <div className="text-center">
-                            <p className="text-[10px] font-bold text-white/60 tracking-wider">{log.time}</p>
-                          </div>
+                          <p className="text-[9px] font-black text-white/40 tracking-tighter uppercase">{log.time}</p>
                         </div>
                       ))}
                     </div>
                   </div>
-                  <p className="text-center text-[10px] text-white/40 mt-5 font-light uppercase tracking-widest">Tap to log 500ml intake (Yes ➔ No ➔ Reset)</p>
                 </div>
 
-                {/* Meditation Setup Panel */}
-                <div className="bg-white/10 backdrop-blur-xl p-6 rounded-3xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                {/* Zen Timer Panel */}
+                <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-2xl">
                   <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
                     <h3 className="font-semibold text-lg flex items-center gap-2 text-white/90">
-                      <Wind className="text-purple-400 drop-shadow-[0_0_5px_rgba(192,132,252,0.8)]" size={20} />
+                      <Wind className="text-purple-400" size={20} />
                       Zen Timer
                     </h3>
-                    <span className="bg-purple-500/20 border border-purple-500/30 text-purple-400 text-xs px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider">
-                      {meditationSessions} Sessions
+                    <span className="text-purple-400 text-[10px] px-3 py-1 bg-purple-500/10 rounded-lg font-black tracking-widest">
+                      {meditationSessions} SESSIONS
                     </span>
                   </div>
                   
-                  <div className="flex flex-col items-center mb-6">
-                    <span className="text-4xl font-black text-white mb-2">{meditationMinutes} <span className="text-xl text-white/40">min</span></span>
+                  <div className="flex flex-col items-center mb-6 px-4">
+                    <span className="text-5xl font-black text-white mb-4">{meditationMinutes}<span className="text-xl text-white/20 ml-1 font-light">min</span></span>
                     <input 
                       type="range" 
                       min="1" max="60" 
                       value={meditationMinutes} 
                       onChange={(e) => setMeditationMinutes(parseInt(e.target.value))}
-                      className="w-full accent-purple-500 bg-white/10 h-2 rounded-lg appearance-none cursor-pointer"
+                      className="w-full accent-purple-500 bg-white/10 h-1.5 rounded-full appearance-none cursor-pointer"
                     />
                   </div>
 
                   <button 
                     onClick={startMeditation}
-                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(147,51,234,0.3)] hover:shadow-[0_0_30px_rgba(147,51,234,0.5)] transition-all active:scale-[0.98]"
+                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all"
                   >
-                    <Play fill="currentColor" size={20} /> Start Session
+                    <Play fill="currentColor" size={20} /> Deep Concentration
                   </button>
                 </div>
-
-                <div className="bg-white/10 backdrop-blur-xl p-6 rounded-3xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-                   <h3 className="font-semibold text-lg mb-6 border-b border-white/10 pb-4">Daily Check-in</h3>
-                   <div className="space-y-5">
-                     {['30m Exercise', 'No processed sugar', 'Mindfulness session', 'Reading 20 pages'].map((task, i) => (
-                       <label key={i} className="flex items-center gap-4 cursor-pointer group">
-                         <div className="w-7 h-7 rounded-xl border border-white/30 bg-black/20 group-hover:border-emerald-400 flex items-center justify-center transition-all relative overflow-hidden">
-                           <div className="absolute inset-0 bg-emerald-400 opacity-0 group-hover:opacity-20 transition-opacity"></div>
-                           <div className="w-3 h-3 bg-emerald-400 rounded-md opacity-0 group-hover:opacity-100 transition-all scale-50 group-hover:scale-100 shadow-[0_0_10px_rgba(52,211,153,0.8)]"></div>
-                         </div>
-                         <span className="text-white/80 font-medium group-hover:text-white transition-colors">{task}</span>
-                       </label>
-                     ))}
-                   </div>
-                </div>
-             </div>
-
-             <div className="p-5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/5 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/50"></div>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,1)]"></div>
-                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em]">Sync Active</span>
-                </div>
-                <p className="text-sm text-white/60 italic font-light leading-relaxed">
-                  "Australia ranks as one of the world's healthiest nations—staying consistent is key."
-                </p>
              </div>
           </div>
         )}
       </main>
 
-      {/* Glassmorphism Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#0a0a0e]/60 backdrop-blur-2xl border-t border-white/10 flex justify-around px-2 pb-6 pt-2 z-30 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+      {/* Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#0a0a0e]/80 backdrop-blur-2xl border-t border-white/10 flex justify-around px-2 pb-8 pt-3 z-30 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
         <NavItem id="dashboard" icon={Activity} label="Status" />
         <NavItem id="calculator" icon={Calculator} label="Calc" />
         <NavItem id="checker" icon={ShieldCheck} label="Guard" />
       </nav>
 
-      {/* --- Active Meditation Overlay --- */}
-      {isMeditating && (
-        <div className="absolute inset-0 z-50 bg-[#0a0a0e]/95 backdrop-blur-3xl flex flex-col items-center justify-center p-6 animate-in fade-in duration-500">
-          
-          {/* Glassmorphism Panel */}
-          <div className="bg-white/10 backdrop-blur-2xl p-8 rounded-[3rem] border border-white/20 flex flex-col items-center w-full max-w-[320px] relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+      {/* --- Profile Glassmorphism Panel (Overlay) --- */}
+      {isProfileOpen && (
+        <div className="absolute inset-0 z-50 bg-black/95 animate-in fade-in duration-300 flex flex-col">
+          <div className="flex-1 overflow-y-auto px-6 pt-10 pb-10 no-scrollbar">
             
-            {/* Animated Glowing Orbs inside panel */}
-            <div className="absolute -top-10 -left-10 w-40 h-40 bg-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-500/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-
-            {/* Title */}
-            <h2 className="text-white/60 uppercase tracking-[0.3em] text-xs font-bold mb-10 relative z-10">Deep Focus</h2>
-
-            {/* Floating Meditative Pose */}
-            <div className="relative w-32 h-32 flex items-center justify-center animate-[bounce_4s_ease-in-out_infinite] mb-10 z-10">
-               <div className="absolute inset-0 bg-purple-400/20 rounded-full blur-xl animate-ping" style={{ animationDuration: '3s' }}></div>
-               <svg viewBox="0 0 100 100" className="w-28 h-28 text-purple-100 drop-shadow-[0_0_15px_rgba(216,180,254,0.8)]">
-                 <circle cx="50" cy="25" r="12" fill="currentColor" />
-                 <path d="M50 40 C 25 40, 15 65, 20 70 C 25 75, 40 70, 50 65 C 60 70, 75 75, 80 70 C 85 65, 75 40, 50 40 Z" fill="currentColor" opacity="0.9" />
-                 <path d="M25 65 C 15 80, 35 90, 50 85 C 65 90, 85 80, 75 65 Z" fill="currentColor" opacity="0.75" />
-               </svg>
+            {/* Header / Close */}
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-2xl font-black tracking-tighter uppercase font-serif">User Profile</h2>
+              <button 
+                onClick={() => setIsProfileOpen(false)}
+                className="p-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full text-white/70 hover:text-white"
+              >
+                <X size={20} />
+              </button>
             </div>
 
-            {/* Timer Display */}
-            <div className="text-6xl font-black tracking-widest text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)] mb-10 relative z-10 font-mono">
+            {/* Profile Info Cards (Glass Morphism) */}
+            <div className="space-y-6">
+              
+              {/* Primary Identity Card */}
+              <div className="bg-white/5 backdrop-blur-3xl p-8 rounded-[3rem] border border-white/10 flex flex-col items-center text-center relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-purple-500 to-blue-500"></div>
+                <div className="w-24 h-24 bg-gradient-to-tr from-emerald-400 to-blue-500 rounded-full flex items-center justify-center p-1 mb-6 shadow-2xl">
+                  <div className="w-full h-full bg-[#0a0a0e] rounded-full flex items-center justify-center">
+                    <User size={48} className="text-white/80" />
+                  </div>
+                </div>
+                <h3 className="text-3xl font-black tracking-tight mb-1">Venki Venom</h3>
+                <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-black tracking-[0.2em] uppercase bg-emerald-500/10 px-4 py-1.5 rounded-full border border-emerald-500/20">
+                  <Gem size={12} /> Premium Active
+                </div>
+              </div>
+
+              {/* Grid Details */}
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: 'Gender', value: 'Male', icon: UserCircle },
+                  { label: 'Age', value: '24', icon: Activity },
+                  { label: 'Birthday', value: '26 Oct 2001', icon: Calendar },
+                  { label: 'Country', value: 'Australia', icon: MapPin },
+                  { label: 'City', value: 'Sydney', icon: MapPin },
+                  { label: 'Contact', value: '+61 4XX XXX XXX', icon: Phone },
+                  { label: 'Weight', value: '70 kg', icon: Scale },
+                  { label: 'Height', value: '175 cm', icon: Ruler },
+                ].map((item, i) => (
+                  <div key={i} className="bg-white/5 backdrop-blur-xl p-5 rounded-3xl border border-white/10">
+                    <item.icon size={14} className="text-white/30 mb-2" />
+                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">{item.label}</p>
+                    <p className="font-bold text-white/90">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Extended Info Panel */}
+              <div className="bg-white/5 backdrop-blur-2xl p-6 rounded-[2.5rem] border border-white/10 space-y-5">
+                <div className="flex items-start gap-4 pb-4 border-b border-white/10">
+                   <Mail size={18} className="text-purple-400 mt-1" />
+                   <div>
+                     <p className="text-[10px] font-black text-white/30 tracking-widest uppercase">Email Address</p>
+                     <p className="text-sm font-bold">venkivenom@healthguard.au</p>
+                   </div>
+                </div>
+                <div className="flex items-start gap-4 pb-4 border-b border-white/10">
+                   <Phone size={18} className="text-rose-400 mt-1" />
+                   <div>
+                     <p className="text-[10px] font-black text-white/30 tracking-widest uppercase">Emergency Contact</p>
+                     <p className="text-sm font-bold">+61 000 000 000</p>
+                   </div>
+                </div>
+                <div className="flex items-start gap-4">
+                   <Heart size={18} className="text-emerald-400 mt-1" />
+                   <div>
+                     <p className="text-[10px] font-black text-white/30 tracking-widest uppercase">Interests</p>
+                     <p className="text-sm font-bold">Meditation, Bio-hacking, HIIT, Psychology</p>
+                   </div>
+                </div>
+              </div>
+
+              {/* Offers/Coupons Section - Styled after Ticket Screenshot */}
+              <div className="mt-8 space-y-4">
+                <h4 className="text-[10px] font-black text-white/40 tracking-widest uppercase px-2 mb-4">My Offers & Coupons</h4>
+                
+                {/* Glass Ticket Card */}
+                <div className="relative overflow-hidden group">
+                  <div className="bg-white/10 backdrop-blur-3xl p-6 rounded-[2rem] border border-white/20 flex items-center justify-between shadow-2xl relative">
+                    {/* Notch Cutouts for Ticket Effect */}
+                    <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-black rounded-full border border-white/20"></div>
+                    <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-black rounded-full border border-white/20"></div>
+                    
+                    <div className="flex-1 border-r border-dashed border-white/20 pr-6 mr-6">
+                      <p className="text-[10px] font-black text-emerald-400 tracking-widest uppercase mb-1">Valid Until Oct 2026</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-5xl font-black tracking-tighter italic">30</span>
+                        <span className="text-2xl font-black">% OFF</span>
+                      </div>
+                      <p className="text-xs font-bold text-white/60 mt-1 uppercase">Any Wellness Retreat</p>
+                    </div>
+
+                    <div className="flex flex-col items-center gap-2">
+                       <Barcode size={40} className="text-white/40" />
+                       <span className="text-[8px] font-mono tracking-widest text-white/20">#AU-HGUARD-26</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Smaller Partner Offer */}
+                <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-xl p-6 rounded-3xl border border-white/10 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
+                    <Ticket size={24} className="text-blue-300" />
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-sm">2-for-1 Gym Pass</h5>
+                    <p className="text-[10px] font-medium text-white/40 uppercase">Partner: Fitness First AU</p>
+                  </div>
+                  <ChevronRight size={16} className="ml-auto text-white/30" />
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Meditation Overlay */}
+      {isMeditating && (
+        <div className="absolute inset-0 z-50 bg-[#060608]/98 backdrop-blur-3xl flex flex-col items-center justify-center p-6 animate-in fade-in duration-500">
+          <div className="bg-white/5 backdrop-blur-[40px] p-8 rounded-[4rem] border border-white/10 flex flex-col items-center w-full max-w-[320px] relative overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.8)]">
+            <div className="absolute -top-10 -left-10 w-40 h-40 bg-purple-500/20 rounded-full blur-[80px] animate-pulse"></div>
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+
+            <h2 className="text-white/40 uppercase tracking-[0.4em] text-[10px] font-black mb-10 relative z-10">Neural Alignment</h2>
+
+            <div className="relative w-32 h-32 flex items-center justify-center animate-[bounce_5s_ease-in-out_infinite] mb-12 z-10">
+               <div className="absolute inset-0 bg-purple-400/10 rounded-full blur-2xl animate-ping" style={{ animationDuration: '4s' }}></div>
+               <Wind size={64} className="text-purple-200/80 drop-shadow-[0_0_20px_rgba(216,180,254,0.4)]" />
+            </div>
+
+            <div className="text-6xl font-black tracking-[0.1em] text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] mb-12 relative z-10 font-mono">
               {formatTime(timeRemaining)}
             </div>
 
-            {/* Stop Button */}
             <button 
               onClick={stopMeditation}
-              className="bg-white/5 border border-white/20 hover:bg-white/10 text-white/80 hover:text-white px-8 py-3 rounded-full font-bold tracking-widest text-sm uppercase transition-all flex items-center gap-2 relative z-10"
+              className="bg-white/5 border border-white/20 hover:bg-white/10 text-white/60 hover:text-white px-10 py-4 rounded-full font-black tracking-[0.2em] text-[10px] uppercase transition-all flex items-center gap-2 relative z-10"
             >
-              <Square fill="currentColor" size={14} /> End Session
+              <Square fill="currentColor" size={10} /> Disconnect
             </button>
           </div>
         </div>
       )}
 
-      {/* Hidden Audio Element pointing to uploaded asset */}
-      <audio ref={audioRef} src="theta-4-to-8-hz-brainwave-entrainment-frequencies-290051 (1).mp3" loop preload="auto" />
+      {/* --- Audio Element: Brainwave Entrainment Frequencies --- */}
+      <audio 
+        ref={audioRef} 
+        src="theta-4-to-8-hz-brainwave-entrainment-frequencies-290051 (1).mp3" 
+        loop 
+        preload="auto" 
+      />
     </div>
   );
 };
+
+const Ruler = ({ size, className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M21.3 15.3l-9.3-9.3c-.4-.4-1-.4-1.4 0l-4.3 4.2c-.4.4-.4 1 0 1.4l9.3 9.3c.4.4 1 .4 1.4 0l4.3-4.2c.4-.4.4-1 0-1.4z"/>
+    <path d="M7 14l-1.5-1.5"/><path d="M10 11l-1.5-1.5"/><path d="M13 8l-1.5-1.5"/>
+  </svg>
+);
 
 export default App;
